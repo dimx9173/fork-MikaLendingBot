@@ -2,7 +2,7 @@
 
 [API]
 # Where to work? "Poloniex" or "Bitfinex". Default is "Poloniex"
-#exchange = Poloniex
+exchange = Bitfinex
 apikey = YourAPIKey
 secret = YourSecret
 
