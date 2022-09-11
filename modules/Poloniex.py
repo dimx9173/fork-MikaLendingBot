@@ -5,7 +5,6 @@ import json
 import socket
 import time
 import urllib
-import urllib2
 import threading
 import modules.Configuration as Config
 
