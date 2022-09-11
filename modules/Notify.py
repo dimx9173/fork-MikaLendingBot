@@ -2,6 +2,9 @@
 import urllib
 import json
 import smtplib
+from urllib.request import build_opener, urlopen
+from urllib.parse import urlencode
+from urllib.error import HTTPError
 try:
     from irc import client
     IRC_LOADED = True
@@ -16,11 +19,8 @@ IRC_SERVER = None
 def encoded_dict(in_dict):
     out_dict = {}
     for k, v in in_dict.iteritems():
-        if isinstance(v, unicode):
-            v = v.encode('utf8')
-        elif isinstance(v, str):
-            # Must be encoded in UTF-8
-            v.decode('utf8')
+        # Must be encoded in UTF-8
+        v = v.decode('utf8')
         out_dict[k] = v
     return out_dict
 
@@ -40,9 +40,9 @@ def check_urlib_response(response, platform):
 def post_to_slack(msg, channels, token, username):
     for channel in channels:
         post_data = {'text': msg, 'channel': channel, 'token': token, 'username': username}
-        enc_post_data = urllib.urlencode(encoded_dict(post_data))
+        enc_post_data = urlencode(encoded_dict(post_data))
         url = 'https://{}/api/{}'.format('slack.com', 'chat.postMessage')
-        response = urllib2.urlopen(url, enc_post_data)
+        response = urlopen(url, enc_post_data)
         check_urlib_response(response, 'slack')
 
 
@@ -51,9 +51,9 @@ def post_to_telegram(msg, chat_ids, bot_id):
         post_data = {"chat_id": chat_id, "text": msg}
         url = "https://api.telegram.org/bot" + bot_id + "/sendMessage"
         try:
-            response = urllib2.urlopen(url, urllib.urlencode(post_data))
+            response = urlopen(url, urlencode(post_data).encode())
             check_urlib_response(response, 'telegram')
-        except urllib2.HTTPError as e:
+        except HTTPError as e:
             msg = "Your bot id is probably configured incorrectly"
             raise NotificationException("{0}\n{1}".format(e, msg))
 
@@ -87,8 +87,8 @@ def send_email(msg, email_login_address, email_login_password, email_smtp_server
 
 def post_to_pushbullet(msg, token, deviceid):
     post_data = {'body': msg, 'device_iden': deviceid, 'title': 'Poloniex Bot', 'type': 'note'}
-    opener = urllib2.build_opener()
-    req = urllib2.Request('https://api.pushbullet.com/v2/pushes', data=json.dumps(post_data),
+    opener = build_opener()
+    req = urllib.request('https://api.pushbullet.com/v2/pushes', data=json.dumps(post_data),
                           headers={'Content-Type': 'application/json', 'Access-Token': token})
     try:
         opener.open(req)
